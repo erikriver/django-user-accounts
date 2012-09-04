@@ -7,6 +7,7 @@ from django.core import urlresolvers
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
 from django.http import HttpResponseRedirect, QueryDict
 from django.utils import importlib
+from django.contrib.sites.models import Site
 
 from account.conf import settings
 
@@ -96,3 +97,16 @@ def load_path_attr(path):
     except AttributeError:
         raise ImproperlyConfigured("Module '%s' does not define a '%s'" % (module, attr))
     return attr
+
+
+def get_current_site(request, raise404=False):
+    if hasattr(request, 'site'): #if use django-hosts
+        return request.site
+    host = request.get_host()
+    try:
+        site = Site.objects.get(domain__iexact=host)
+    except Site.DoesNotExist:
+        if raise404:
+            raise Http404    
+        site = Site.objects.get_current()
+    return site

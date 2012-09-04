@@ -10,7 +10,6 @@ from django.views.generic.edit import FormView
 
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
-from django.contrib.sites.models import get_current_site
 from django.contrib.auth.tokens import default_token_generator
 
 from account import signals
@@ -20,7 +19,7 @@ from account.forms import ChangePasswordForm, PasswordResetForm, PasswordResetTo
 from account.forms import SettingsForm
 from account.mixins import LoginRequiredMixin
 from account.models import SignupCode, EmailAddress, EmailConfirmation, Account, AccountDeletion
-from account.utils import default_redirect, user_display
+from account.utils import default_redirect, user_display, get_current_site
 
 
 class SignupView(FormView):
@@ -107,6 +106,7 @@ class SignupView(FormView):
             "primary": True,
             "verified": False,
             "confirm": settings.ACCOUNT_EMAIL_CONFIRMATION_EMAIL,
+            "site": get_current_site(self.request),
         }
         if self.signup_code:
             self.signup_code.use(self.created_user)
@@ -631,7 +631,8 @@ class SettingsView(LoginRequiredMixin, FormView):
         email = form.cleaned_data["email"].strip()
         if not self.primary_email_address:
             user.email = email
-            EmailAddress.objects.add_email(self.request.user, email, primary=True, confirm=confirm)
+            site = get_current_site(self.request)
+            EmailAddress.objects.add_email(self.request.user, email, primary=True, confirm=confirm, site=site)
             user.save()
         else:
             if email != self.primary_email_address.email:

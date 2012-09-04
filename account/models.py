@@ -98,6 +98,7 @@ def user_post_save(sender, **kwargs):
     """
     user, created = kwargs["instance"], kwargs["created"]
     disabled = getattr(user, "_disable_account_creation", not settings.ACCOUNT_CREATE_ON_SAVE)
+    print "account save disabled",disabled
     if created and not disabled:
         Account.create(user=user)
 
@@ -261,9 +262,9 @@ class EmailAddress(models.Model):
         self.user.save()
         return True
     
-    def send_confirmation(self):
+    def send_confirmation(self, **kwargs):
         confirmation = EmailConfirmation.create(self)
-        confirmation.send()
+        confirmation.send(**kwargs)
         return confirmation
     
     def change(self, new_email, confirm=True):
