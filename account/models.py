@@ -98,7 +98,6 @@ def user_post_save(sender, **kwargs):
     """
     user, created = kwargs["instance"], kwargs["created"]
     disabled = getattr(user, "_disable_account_creation", not settings.ACCOUNT_CREATE_ON_SAVE)
-    print "account save disabled",disabled
     if created and not disabled:
         Account.create(user=user)
 
@@ -214,7 +213,8 @@ class SignupCode(models.Model):
         }
         subject = render_to_string("account/email/invite_user_subject.txt", ctx)
         message = render_to_string("account/email/invite_user.txt", ctx)
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
+        #send_mail(subject, message, current_site.email, [self.email])
+        send_mail(subject, message, "%s <%s>" %(current_site.title, current_site.email), [self.email])
         self.sent = timezone.now()
         self.save()
         signup_code_sent.send(sender=SignupCode, signup_code=self)
@@ -325,6 +325,7 @@ class EmailConfirmation(models.Model):
             reverse("account_confirm_email", args=[self.key])
         )
         ctx = {
+            "email_address": self.email_address,
             "user": self.email_address.user,
             "activate_url": activate_url,
             "current_site": current_site,
@@ -333,7 +334,8 @@ class EmailConfirmation(models.Model):
         subject = render_to_string("account/email/email_confirmation_subject.txt", ctx)
         subject = "".join(subject.splitlines()) # remove superfluous line breaks
         message = render_to_string("account/email/email_confirmation_message.txt", ctx)
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email_address.email])
+        #send_mail(subject, message, current_site.email, [self.email_address.email])
+        send_mail(subject, message, "%s <%s>" %(current_site.school.title, current_site.school.email), [self.email_address.email])
         self.sent = timezone.now()
         self.save()
         signals.email_confirmation_sent.send(sender=self.__class__, confirmation=self)
