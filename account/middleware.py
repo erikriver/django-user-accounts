@@ -1,6 +1,5 @@
 from django.utils import translation, timezone
 from django.utils.cache import patch_vary_headers
-from django.conf import settings
 
 from account.conf import settings
 from account.models import Account
