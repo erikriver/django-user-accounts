@@ -201,8 +201,7 @@ class SignupView(FormView):
             else:
                 return True
         else:
-            # TODO: remove school dependency
-            return settings.ACCOUNT_OPEN_SIGNUP and self.request.site.school.open_reg
+            return settings.ACCOUNT_OPEN_SIGNUP
     
     def closed(self):
         response_kwargs = {
