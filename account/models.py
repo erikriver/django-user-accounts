@@ -317,7 +317,8 @@ class EmailConfirmation(models.Model):
             return email_address
     
     def send(self, **kwargs):
-        current_site = kwargs["site"] if "site" in kwargs else Site.objects.get_current()
+        #Fix for allowing multisite instead of using always SITE_ID of settings
+        current_site = kwargs["site"] if "site" in kwargs else self.email_address.user.get_profile().site
         protocol = getattr(settings, "DEFAULT_HTTP_PROTOCOL", "http")
         activate_url = u"%s://%s%s" % (
             protocol,
